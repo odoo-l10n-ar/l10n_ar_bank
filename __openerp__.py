@@ -20,7 +20,7 @@
 
 {
     'name': 'Banks of Argentina',
-    'version': '1.0',
+    'version': '2.0',
     'author': 'Thymbra - Torre de Hanoi',
     'category': 'Localisation/Argentina',
     'website': 'http://www.thymbra.com/',
