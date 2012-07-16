@@ -1,10 +1,16 @@
-Módulo de localización Argentina
+Listado de entidades financieras habilitadas por el BCRA.
 
-Autores:
-    Luis Falcon <lfalcon@thymbra.com>
-    Cristian S. Rocha <cristian.rocha@moldeointeractive.com.ar>
-    Bruno M. Villasanti <bvillasanti@thymbra.com>
+Este módulo le permite tener a disposición el listado actualizado de
+las entidades bancarias de la República Argentina.
 
-Licencia: GPL-3
+Si usted es un usuario común, con solo instalar el módulo es suficiente
+para tener a disposición el listado.
 
-(C) 2005 - present
+Si usted quiere actualizar el listado de bancos debería utilizar el
+script bank_loader.py que debe ejecutarlo a nivel del directorio script. 
+
+Includes:
+
+ - Financial Entities (http://www.bcra.gov.ar/)
+
+

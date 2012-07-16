@@ -1,4 +1,24 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright (C) 2012 OpenERP - Team de Localización Argentina.
+# https://launchpad.net/~openerp-l10n-ar-localization
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 
 try:
         import geopy
@@ -128,23 +148,40 @@ def ar_banks_iterator(
                     data[key] = postprocessor_keys[key](key, data)
             yield data
 
-def xml_banks():
-    print """
+def xml_banks(f):
+    print >> f, """
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright (C), 2012, OpenERP - Team de Localización Argentina.
+ https://launchpad.net/~openerp-l10n-ar-localization
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
+-->
 <openerp>
 \t<data noupdate="True">
 """
     for bank in ar_banks_iterator():
-        print "\t\t<record model='res.bank' id='%(id)s'>" % bank
+        print >> f, "\t\t<record model='res.bank' id='%(id)s'>" % bank
         for key in bankfields:
             if key in bank:
                 try:
-                    print "\t\t\t<field name='%s'>%s</field>" % (key,
+                    print >> f, "\t\t\t<field name='%s'>%s</field>" % (key,
                                                                  bank[key].encode('utf-8'))
                 except:
-                    print "\t\t\t<field name='%s'>ERROR</field>" % key
-        print "\t\t</record>"
-    print """
+                    print >> f, "\t\t\t<field name='%s'>ERROR</field>" % key
+        print >> f, "\t\t</record>"
+    print >> f, """
 \t</data>
 </openerp>
 """
@@ -154,8 +191,8 @@ def test_suite():
     return doctest.DocTestSuite()
 
 if __name__ == "__main__":
-    xml_banks()
-    #import unittest
-    #runner = unittest.TextTestRunner()
-    #runner.run(test_suite())
+    f = open('../data/res_bank.xml', 'w')
+    xml_banks(f)
+    f.close()
 
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

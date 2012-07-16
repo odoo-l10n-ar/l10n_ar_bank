@@ -1,4 +1,23 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+# Copyright (C) 2012 OpenERP - Team de Localización Argentina.
+# https://launchpad.net/~openerp-l10n-ar-localization
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 
 import re, sys
 from BeautifulSoup import BeautifulSoup
@@ -172,9 +191,15 @@ def unify_geo_data(input_string):
     # Ordering data
     if len(result) == 4:
         address, data['city'], data['state'], data['country'] = result
-    else:
+    elif len(result) == 3:
+        print >> sys.stderr, "result: ", result
         address, data['state'], data['country'] = result
         data['city'] = ''
+    else:
+        print >> sys.stderr, "No puede aceptarse esta direccion", result
+        print >> sys.stderr, "Ingrese una nueva direccion"
+        s = raw_input()
+        return unify_geo_data(s)
     data['latitud'] = lat
     data['longitud'] = lng
     # Split address data
@@ -195,11 +220,11 @@ def unify_geo_data(input_string):
     data['street'] = street.strip()
     data['street2'] = street2.strip()
     data['number'] = number.strip()
-    # Load zip data
-    try:
+    # Load zip data. No funciona la busqueda de código ZIP.
+    if False:
         data['zip'] = search_zip(data['street'], data['number'], data['city'],
                                  data['state'], data['country'])
-    except:
+    else:
         data['zip'] = ''
     return data
 
@@ -212,3 +237,4 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(test_suite())
 
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
