@@ -18,7 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
 {
     'name':     'Banks of Argentina',
     'version':  '2.1',
@@ -43,5 +42,4 @@ Includes:
     'active': False,
     'installable': True,
 }
-
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

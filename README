@@ -9,8 +9,8 @@ para tener a disposición el listado.
 Si usted quiere actualizar el listado de bancos debería utilizar el
 script bank_loader.py que debe ejecutarlo a nivel del directorio script. 
 
-Includes:
+Incluye:
 
  - Financial Entities (http://www.bcra.gov.ar/)
-
+ - Script para descargar las instituciones desde la página del BCRA.
 
