@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+#!/usr/bin/python
+
 def shist(s, chars="abcdefghijklmnopqrstuvwxyz .01234567"):
     """
     Generate a histogram for s

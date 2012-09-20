@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+#!/usr/bin/python
+
 import sys, urllib, hashlib, os, os.path, pickle
 from geopy import geocoders
 from types import GeneratorType

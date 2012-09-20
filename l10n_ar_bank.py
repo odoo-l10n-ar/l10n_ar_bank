@@ -19,7 +19,17 @@
 #
 #############################################################################
 
-__author__ = "López Ignacio M. (www.dinamotion.com.ar) - lopezignacio@gmail.com"
+from osv import fields,osv
+from tools.translate import _
+import time
 
-import l10n_ar_bank
-import wizard
+class Bank(osv.osv):
+    _inherit = 'res.bank'
+    _columns = {
+		  'update' : fields.date(_('Update')),
+		  'vat': fields.char(_('VAT'),size=32 ,help="Value Added Tax number."),
+		}
+    _defaults = {
+		  'update': lambda *a: time.strftime('%Y-%m-%d')
+		}
+Bank()
