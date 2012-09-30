@@ -1,8 +1,8 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 ##############################################################################
 #
-# Copyright (C) 2012 OpenERP - Team de Localización Argentina.
+# Copyright (C) 2011-2014 OpenERP - Team de Localización Argentina.
 # https://launchpad.net/~openerp-l10n-ar-localization
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-##############################################################################
+#############################################################################
+"""
+Import from BCRA banks of Argentina
+"""
 
 try:
         import geopy
 except ImportError:
         print "Please, intall geopy using 'pip install geopy'."
-
-import re, sys
+        
 from BeautifulSoup import BeautifulSoup
+import re
 from geosearch import unify_geo_data, strip_accents
 from cache import urlopen
 
@@ -53,13 +56,15 @@ compiled_re = {
         'vat'    : re.compile(r'CUIT:</span>&nbsp;([\d-]+)\s*&nbsp;'),
     }
 
+
 postprocessor_keys = {
     'code': lambda v, d: 'email' in d and [ s for s in
                                            d['email'].split('@')[1].split('.')
                                            if not s in ["ar", "com"]
                                           ][0].upper() or v,
     'street': lambda v, d: "%(street)s %(number)s" % d,
-    'name': lambda v, d: d[v].title()
+    'name': lambda v, d: d[v].title(),
+    'state': lambda v, d: d[v].replace(" Province","")
 }
 
 dictkeys = [
@@ -89,6 +94,7 @@ dictkeys = [
 ]
 
 bankfields = [
+    'id',
     'name',
     'code',
     'active',
@@ -102,6 +108,7 @@ bankfields = [
     'phone',
     'fax',
     'email',
+    'vat',
 ]
 
 def ar_banks_iterator(
@@ -146,53 +153,8 @@ def ar_banks_iterator(
             for key in postprocessor_keys.keys():
                 if key in data:
                     data[key] = postprocessor_keys[key](key, data)
+                    data[key] = data[key].encode('utf-8')
             yield data
 
-def xml_banks(f):
-    print >> f, """
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
- Copyright (C), 2012, OpenERP - Team de Localización Argentina.
- https://launchpad.net/~openerp-l10n-ar-localization
 
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
 
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with this program. If not, see <http://www.gnu.org/licenses/>.
--->
-<openerp>
-\t<data noupdate="True">
-"""
-    for bank in ar_banks_iterator():
-        print >> f, "\t\t<record model='res.bank' id='%(id)s'>" % bank
-        for key in bankfields:
-            if key in bank:
-                try:
-                    print >> f, "\t\t\t<field name='%s'>%s</field>" % (key,
-                                                                 bank[key].encode('utf-8'))
-                except:
-                    print >> f, "\t\t\t<field name='%s'>ERROR</field>" % key
-        print >> f, "\t\t</record>"
-    print >> f, """
-\t</data>
-</openerp>
-"""
-
-def test_suite():
-    import doctest
-    return doctest.DocTestSuite()
-
-if __name__ == "__main__":
-    f = open('../data/res_bank.xml', 'w')
-    xml_banks(f)
-    f.close()
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

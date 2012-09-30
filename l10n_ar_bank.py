@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-# Copyright (C) 2012 OpenERP - Team de Localización Argentina.
+# Copyright (C) 2011-2014 OpenERP - Team de Localización Argentina.
 # https://launchpad.net/~openerp-l10n-ar-localization
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 #############################################################################
 
-import l10n_ar_bank
-import wizard
+from osv import fields,osv
+from tools.translate import _
+import time
+
+class Bank(osv.osv):
+    _inherit = 'res.bank'
+    _columns = {
+		  'update' : fields.date(_('Update')),
+		  'vat': fields.char(_('VAT'),size=32 ,help="Value Added Tax number."),
+		}
+    _defaults = {
+		  'update': lambda *a: time.strftime('%Y-%m-%d')
+		}
+Bank()

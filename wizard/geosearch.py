@@ -1,23 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-# Copyright (C) 2012 OpenERP - Team de Localización Argentina.
-# https://launchpad.net/~openerp-l10n-ar-localization
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
+#!/usr/bin/python
 
 import re, sys
 from BeautifulSoup import BeautifulSoup
@@ -69,63 +51,63 @@ def _st(i, s=' ', m='+'):
     i = i.encode('ascii', 'xmlcharrefreplace')
     return i
 
-def search_zip(street, number, city, state, country, unique=True):
-    """
-    Return zipcode. Only works with argentina.
+#def search_zip(street, number, city, state, country, unique=True):
+    #"""
+    #Return zipcode. Only works with argentina.
 
-    >>> search_zip("rivadavia", "9800", "buenos aires", "capital federal", "argentina")
-    u'C1407DZT'
-    >>> search_zip("jose clemente paz", "1200", "jose clemente paz", "buenos aires", "argentina")
-    u'B1665BBB'
-    >>> search_zip("general paz", "5445", "general san martin", "buenos aires", "argentina")
-    u'1650'
-    """
-    street = strip_accents(street.lower())
-    city = strip_accents(city.lower())
-    state = strip_accents(state.lower())
-    country = strip_accents(country.lower())
+    #>>> search_zip("rivadavia", "9800", "buenos aires", "capital federal", "argentina")
+    #u'C1407DZT'
+    #>>> search_zip("jose clemente paz", "1200", "jose clemente paz", "buenos aires", "argentina")
+    #u'B1665BBB'
+    #>>> search_zip("general paz", "5445", "general san martin", "buenos aires", "argentina")
+    #u'1650'
+    #"""
+    #street = strip_accents(street.lower())
+    #city = strip_accents(city.lower())
+    #state = strip_accents(state.lower())
+    #country = strip_accents(country.lower())
 
-    codpos = None
+    #codpos = None
 
-    if country in ['argentina', 'ar']:
+    #if country in ['argentina', 'ar']:
 
-        # Elimina titulos de calles y avidas
-        street = re.sub('\s*av\s+', '', street)
+        ## Elimina titulos de calles y avidas
+        #street = re.sub('\s*av\s+', '', street)
 
-        re_cpa = re.compile('>(\w{8})<')
+        #re_cpa = re.compile('>(\w{8})<')
 
-        if state in ['capital federal']:
-            codloca=['5001',]
-            codpos=['',]
-        else:
-            url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_loca.idc?codprov=%s&pnl=%s"
-            inpage = urlopen(url % (codprov_dict[country][state], _st(city)))
-            soup = BeautifulSoup(inpage)
-            options = soup.findAll('option')
-            if len(options) == 0:
-                raise RuntimeError('No locations for "%s"' % ','.join([street, number, city, state,
-                                                         country]))
+        #if state in ['capital federal']:
+            #codloca=['5001',]
+            #codpos=['',]
+        #else:
+            #url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_loca.idc?codprov=%s&pnl=%s"
+            #inpage = urlopen(url % (codprov_dict[country][state], _st(city)))
+            #soup = BeautifulSoup(inpage)
+            #options = soup.findAll('option')
+            #if len(options) == 0:
+                #raise RuntimeError('No locations for "%s"' % ','.join([street, number, city, state,
+                                                         #country]))
 
-            loca = map(lambda opt: re.search('(.*)\s*\(\d+\)',
-                                             opt.string.lower()).groups()[0].strip(), options)
-            codloca = map(lambda opt: opt['value'], options)
-            codpos = map(lambda opt: re.search('\((\d+)\)', opt.string).groups()[0], options)
+            #loca = map(lambda opt: re.search('(.*)\s*\(\d+\)',
+                                             #opt.string.lower()).groups()[0].strip(), options)
+            #codloca = map(lambda opt: opt['value'], options)
+            #codpos = map(lambda opt: re.search('\((\d+)\)', opt.string).groups()[0], options)
 
-        for i in xrange(len(codloca)):
-            url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_calle.idc?codloca=%s&pnc=%s&alt=%s"
-            inpage = urlopen(url % (codloca[i], _st(street), number))
-            soup = BeautifulSoup(inpage)
-            output = soup.body.div.table.tr.td.renderContents()
-            match = re_cpa.search(output)
-            if match: codpos[i] = match.group(1)
+        #for i in xrange(len(codloca)):
+            #url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_calle.idc?codloca=%s&pnc=%s&alt=%s"
+            #inpage = urlopen(url % (codloca[i], _st(street), number))
+            #soup = BeautifulSoup(inpage)
+            #output = soup.body.div.table.tr.td.renderContents()
+            #match = re_cpa.search(output)
+            #if match: codpos[i] = match.group(1)
 
-        if len(codloca) > 1 and unique:
-            i = mostequivalent(loca, city)
-            return codpos[i]
-        else:
-            return unicode(codpos[0])
-    else:
-        raise NotImplementedError
+        #if len(codloca) > 1 and unique:
+            #i = mostequivalent(loca, city)
+            #return codpos[i]
+        #else:
+            #return unicode(codpos[0])
+    #else:
+        #raise NotImplementedError
 
 
 def unify_geo_data(input_string):
@@ -165,7 +147,7 @@ def unify_geo_data(input_string):
                  'longitud': -64.292496499999999}
     True
     """
-    print >> sys.stderr, "Unifying:", input_string
+    #print >> sys.stderr, "Unifying:", input_string
     input_string = input_string.lower()
     # Remove sporius data for search and store it in street2
     street2 = []
@@ -178,7 +160,7 @@ def unify_geo_data(input_string):
                     input_string = rexp.sub('', input_string)
     street2 = ','.join(street2)
     input_string = input_string.encode('ascii', 'ignore')
-
+    
     # Search data in geographics database
     try:
         place, (lat, lng) = geocode(_st(input_string, " ", " "))
@@ -191,15 +173,9 @@ def unify_geo_data(input_string):
     # Ordering data
     if len(result) == 4:
         address, data['city'], data['state'], data['country'] = result
-    elif len(result) == 3:
-        print >> sys.stderr, "result: ", result
+    else:
         address, data['state'], data['country'] = result
         data['city'] = ''
-    else:
-        print >> sys.stderr, "No puede aceptarse esta direccion", result
-        print >> sys.stderr, "Ingrese una nueva direccion"
-        s = raw_input()
-        return unify_geo_data(s)
     data['latitud'] = lat
     data['longitud'] = lng
     # Split address data
@@ -220,12 +196,12 @@ def unify_geo_data(input_string):
     data['street'] = street.strip()
     data['street2'] = street2.strip()
     data['number'] = number.strip()
-    # Load zip data. No funciona la busqueda de código ZIP.
-    if False:
-        data['zip'] = search_zip(data['street'], data['number'], data['city'],
-                                 data['state'], data['country'])
-    else:
-        data['zip'] = ''
+    # Load zip data
+    #try:
+        #data['zip'] = search_zip(data['street'], data['number'], data['city'],
+                                 #data['state'], data['country'])
+    #except:
+    data['zip'] = ''
     return data
 
 def test_suite():
@@ -237,4 +213,3 @@ if __name__ == "__main__":
     runner = unittest.TextTestRunner()
     runner.run(test_suite())
 
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
