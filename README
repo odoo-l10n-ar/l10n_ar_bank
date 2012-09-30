@@ -12,5 +12,5 @@ script bank_loader.py que debe ejecutarlo a nivel del directorio script.
 Incluye:
 
  - Financial Entities (http://www.bcra.gov.ar/)
- - Script para descargar las instituciones desde la página del BCRA.
+ - Wizard la página del BCRA.
 
