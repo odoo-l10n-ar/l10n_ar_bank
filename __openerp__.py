@@ -87,6 +87,9 @@ from the CLI.
 		      'l10n_ar_bank_menu.xml',
 		      'wizard/wiz_l10n_ar_bank.xml',
 		  ],
+    'test': [
+        'test/l10n_ar_banks_wizard.yml',
+    ],
     'active': False,
     'installable': True,
 }

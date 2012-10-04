@@ -170,12 +170,12 @@ def unify_geo_data(input_string):
         place, (lat, lng) = places[i]
     data = {}
     result = map(lambda s: s.strip(), place.split(','))
+    result = [u'']*(4-len(result)) + result
     # Ordering data
     if len(result) == 4:
         address, data['city'], data['state'], data['country'] = result
     else:
-        address, data['state'], data['country'] = result
-        data['city'] = ''
+        raise RuntimeError('Exists more than 4 tokens in the place.')
     data['latitud'] = lat
     data['longitud'] = lng
     # Split address data
