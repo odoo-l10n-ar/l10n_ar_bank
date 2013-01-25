@@ -90,6 +90,9 @@ from the CLI.
     'test': [
         'test/l10n_ar_banks_wizard.yml',
     ],
+    'external_dependencies': {
+        'python': [ 'BeautifulSoup', 'geopy' ],
+    },
     'active': False,
     'installable': True,
 }
