@@ -20,7 +20,7 @@
 #############################################################################
 
 from openerp.osv import fields,osv
-from tools.translate import _
+from openerp.tools.translate import _
 import time
 
 from banks_def import *
