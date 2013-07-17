@@ -25,11 +25,12 @@
     'category': 'Localization/Argentina',
     'website':  'https://launchpad.net/~openerp-l10n-ar-localization',
     'license':  'AGPL-3',
-    'description': """\
-Part of localization Model for Argentina - Banks of Argentina
+    'description': """
+Banks of Argentina
+==================
 
---------------------------
-(SPANISH)
+Spanish
+-------
 
 Listado de entidades financieras habilitadas por el BCRA.
 
@@ -53,8 +54,8 @@ Instalación de los requerimientos:
 
 ejecutar desde la linea de comandos.
 
---------------------------
-(ENGLISH)
+English
+-------
 
 Includes:
  - Financial Entities (http://www.bcra.gov.ar/)
