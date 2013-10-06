@@ -20,7 +20,7 @@
 ##############################################################################
 {
     'name':     'Banks of Argentina',
-    'version':  '2.1',
+    'version':  '2.7.155',
     'author':   'OpenERP - Team de Localización Argentina',
     'category': 'Localization/Argentina',
     'website':  'https://launchpad.net/~openerp-l10n-ar-localization',
@@ -90,6 +90,9 @@ from the CLI.
     'test': [
         'test/l10n_ar_banks_wizard.yml',
     ],
+    'external_dependencies': {
+        'python': [ 'BeautifulSoup', 'geopy' ],
+    },
     'active': False,
     'installable': True,
 }
