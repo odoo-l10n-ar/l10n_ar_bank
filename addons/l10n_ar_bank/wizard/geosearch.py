@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/python
 
 import re, sys
 from BeautifulSoup import BeautifulSoup
