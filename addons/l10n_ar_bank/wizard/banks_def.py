@@ -3,12 +3,20 @@
 Import from BCRA banks of Argentina
 """
 
+import logging
+_logger = logging.getLogger(__name__)
+
 try:
-        import geopy
+    import geopy
 except ImportError:
-        print "Please, intall geopy using 'pip install geopy'."
-        
-from BeautifulSoup import BeautifulSoup
+    _logger.warning("Please, install geopy using 'pip install geopy'.")
+
+try:
+    from BeautifulSoup import BeautifulSoup
+except ImportError:
+    _logger.warning("Please, install BeautifulSoup using 'pip install beautifulsoup'.")
+    BeautifulSoup = None
+
 import re
 from geosearch import unify_geo_data, strip_accents
 from cache import urlopen
@@ -43,8 +51,8 @@ postprocessor_keys = {
                                            if not s in ["ar", "com"]
                                           ][0].upper() or v,
     'street': lambda v, d: "%(street)s %(number)s" % d,
-    'name': lambda v, d: d[v].title(),
-    'state': lambda v, d: d[v].replace(" Province","")
+    'name': lambda v, d: d[v].title() if d[v] else "",
+    'state': lambda v, d: d[v].replace(" Province","") if d[v] else ""
 }
 
 dictkeys = [
@@ -106,6 +114,9 @@ def ar_banks_iterator(
                                 'state', 'email', 'vat']
     True
     """
+    if BeautifulSoup is None:
+        return
+
     page_list = urlopen(url_bank_list)
     soup_list = BeautifulSoup(page_list)
 
@@ -129,12 +140,17 @@ def ar_banks_iterator(
                         data[key] = unicode(search.group(1).strip(), encoding)
             searchaddress = u"%(street)s, %(city)s, %(state)s, %(country)s" % data
             geodata = unify_geo_data(strip_accents(searchaddress))
-            data.update(geodata)
-            for key in postprocessor_keys.keys():
-                if key in data:
-                    data[key] = postprocessor_keys[key](key, data)
-                    data[key] = data[key].encode('utf-8')
-            yield data
+            if 'error' in geodata:
+                _logger.error("%s. %s." % (geodata['error'], searchaddress))
+                continue
+            else:
+                data.update(geodata)
+                for key in postprocessor_keys.keys():
+                    if key in data:
+                        data[key] = postprocessor_keys[key](key, data)
+                        data[key] = data[key]
+                yield data
 
+    return
 
 

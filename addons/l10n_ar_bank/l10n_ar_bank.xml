@@ -9,7 +9,6 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
 	      <field name="bic" position="after">
-		  <field name='update' readonly='1'/>
 		  <field name='vat'/>
 	      </field>
             </field>

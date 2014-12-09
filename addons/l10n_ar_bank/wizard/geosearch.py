@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import logging
+_logger = logging.getLogger(__name__)
+
+try:
+    from BeautifulSoup import BeautifulSoup
+except ImportError:
+    _logger.warning("Please, install BeautifulSoup using 'pip install beautifulsoup'.")
+
 import re, sys
-from BeautifulSoup import BeautifulSoup
 from strcmp import mostequivalent
-from cache import urlopen, geocode
+from cache import urlopen, geocode, GeocoderTimedOut
 import unicodedata
 
 codprov_dict = {
@@ -35,9 +42,51 @@ codprov_dict = {
     }
 }
 
+address_re = [
+    re.compile(
+        r"\s*((?P<building>[\w\s]+)\s*,)?"
+        r"\s*((?P<number>[\d]+)\s*,)"
+        r"\s*((?P<street>[\w\s]+)\s*,)"
+        r"\s*(\s*((?P<subneighbourhood>[\w\s]+)\s*,)?(?P<neighbourhood>[\w\s]+)\s*,)?"
+        r"\s*((?P<city>(?P<state>Ciudad Aut.*noma de Buenos Aires))\s*,)"
+        r"\s*((?P<zip>(C)?\d\d\d\d(\w\w\w)?)\s*,)?"
+        r"\s*(?P<country>[Aa]rgentina)"
+        , re.UNICODE),
+    re.compile(
+        r"\s*((?P<building>)\s*,)?"
+        r"\s*((?P<number>[\d]+)\s*,)?"
+        r"\s*((?P<street>[\w\s]+)\s*,)"
+        r"\s*(\s*((?P<subneighbourhood>[\w\s]+)\s*,)?(?P<neighbourhood>[\w\s]+)\s*,)?"
+        r"\s*((?P<city>(?P<state>Ciudad Aut.*noma de Buenos Aires))\s*,)"
+        r"\s*((?P<zip>(C)?\d\d\d\d(\w\w\w)?)\s*,)?"
+        r"\s*(?P<country>[Aa]rgentina)"
+        , re.UNICODE),
+    re.compile(
+        r"\s*((?P<building>[\w\s]+)\s*,)?"
+        r"\s*((?P<number>[\d]+)\s*,)?"
+        r"\s*((?P<street>[\w\s]+)\s*,)"
+        r"\s*(\s*((?P<subneighbourhood>[\w\s]+)\s*,)?(?P<neighbourhood>[\w\s]+)\s*,)?"
+        r"\s*((?P<city>[\w\s]+)\s*,)"
+        r"\s*((?P<state>[\w\s]+)\s*,)"
+        r"\s*((?P<zip>\w?\d\d\d\d(\w\w\w)?)\s*,)?"
+        r"\s*(?P<country>[Aa]rgentina)"
+        , re.UNICODE),
+    re.compile(
+        r"\s*((?P<building>[\w\s]+)\s*,)?"
+        r"\s*((?P<number>[\d]+)\s*,)"
+        r"\s*((?P<street>[\w\s]+)\s*,)"
+        r"\s*(\s*((?P<subneighbourhood>[\w\s]+)\s*,)?(?P<neighbourhood>[\w\s]+)\s*,)?"
+        r"\s*((?P<city>[\w\s]+)\s*,)?"
+        r"\s*((?P<state>[\w\s]+)\s*,)?"
+        r"\s*((?P<zip>\w?\d\d\d\d(\w\w\w)?)\s*,)?"
+        r"\s*(?P<country>[Aa]rgentina)"
+        , re.UNICODE),
+]
+
 street2_searcher = {
     'argentina': [
         re.compile('(piso\s+\w+)'),
+        re.compile('(dpto.[^,]*)'),
     ]
 }
 
@@ -50,64 +99,63 @@ def _st(i, s=' ', m='+'):
     i = i.encode('ascii', 'xmlcharrefreplace')
     return i
 
-#def search_zip(street, number, city, state, country, unique=True):
-    #"""
-    #Return zipcode. Only works with argentina.
+def search_zip(street, number, city, state, country, unique=True):
+    """
+    Return zipcode. Only works with argentina.
 
-    #>>> search_zip("rivadavia", "9800", "buenos aires", "capital federal", "argentina")
-    #u'C1407DZT'
-    #>>> search_zip("jose clemente paz", "1200", "jose clemente paz", "buenos aires", "argentina")
-    #u'B1665BBB'
-    #>>> search_zip("general paz", "5445", "general san martin", "buenos aires", "argentina")
-    #u'1650'
-    #"""
-    #street = strip_accents(street.lower())
-    #city = strip_accents(city.lower())
-    #state = strip_accents(state.lower())
-    #country = strip_accents(country.lower())
+    >>> search_zip("rivadavia", "9800", "buenos aires", "capital federal", "argentina")
+    u'C1407DZT'
+    >>> search_zip("jose clemente paz", "1200", "jose clemente paz", "buenos aires", "argentina")
+    u'B1665BBB'
+    >>> search_zip("general paz", "5445", "general san martin", "buenos aires", "argentina")
+    u'1650'
+    """
+    street = strip_accents(street.lower())
+    city = strip_accents(city.lower())
+    state = strip_accents(state.lower())
+    country = strip_accents(country.lower())
 
-    #codpos = None
+    codpos = None
 
-    #if country in ['argentina', 'ar']:
+    if country in ['argentina', 'ar']:
 
-        ## Elimina titulos de calles y avidas
-        #street = re.sub('\s*av\s+', '', street)
+        # Elimina titulos de calles y avidas
+        street = re.sub('\s*av\s+', '', street)
 
-        #re_cpa = re.compile('>(\w{8})<')
+        re_cpa = re.compile('>(\w{8})<')
 
-        #if state in ['capital federal']:
-            #codloca=['5001',]
-            #codpos=['',]
-        #else:
-            #url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_loca.idc?codprov=%s&pnl=%s"
-            #inpage = urlopen(url % (codprov_dict[country][state], _st(city)))
-            #soup = BeautifulSoup(inpage)
-            #options = soup.findAll('option')
-            #if len(options) == 0:
-                #raise RuntimeError('No locations for "%s"' % ','.join([street, number, city, state,
-                                                         #country]))
+        if state in ['capital federal']:
+            codloca=['5001',]
+            codpos=['',]
+        else:
+            url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_loca.idc?codprov=%s&pnl=%s"
+            inpage = urlopen(url % (codprov_dict[country][state], _st(city)))
+            soup = BeautifulSoup(inpage)
+            options = soup.findAll('option')
+            if len(options) == 0:
+                raise RuntimeError('No locations for "%s"' % ','.join([street, number, city, state,
+                                                         country]))
 
-            #loca = map(lambda opt: re.search('(.*)\s*\(\d+\)',
-                                             #opt.string.lower()).groups()[0].strip(), options)
-            #codloca = map(lambda opt: opt['value'], options)
-            #codpos = map(lambda opt: re.search('\((\d+)\)', opt.string).groups()[0], options)
+            loca = map(lambda opt: re.search('(.*)\s*\(\d+\)',
+                                             opt.string.lower()).groups()[0].strip(), options)
+            codloca = map(lambda opt: opt['value'], options)
+            codpos = map(lambda opt: re.search('\((\d+)\)', opt.string).groups()[0], options)
 
-        #for i in xrange(len(codloca)):
-            #url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_calle.idc?codloca=%s&pnc=%s&alt=%s"
-            #inpage = urlopen(url % (codloca[i], _st(street), number))
-            #soup = BeautifulSoup(inpage)
-            #output = soup.body.div.table.tr.td.renderContents()
-            #match = re_cpa.search(output)
-            #if match: codpos[i] = match.group(1)
+        for i in xrange(len(codloca)):
+            url="http://www3.correoargentino.com.ar/scriptsN/cpa/cpa_calle.idc?codloca=%s&pnc=%s&alt=%s"
+            inpage = urlopen(url % (codloca[i], _st(street), number))
+            soup = BeautifulSoup(inpage)
+            output = soup.body.div.table.tr.td.renderContents()
+            match = re_cpa.search(output)
+            if match: codpos[i] = match.group(1)
 
-        #if len(codloca) > 1 and unique:
-            #i = mostequivalent(loca, city)
-            #return codpos[i]
-        #else:
-            #return unicode(codpos[0])
-    #else:
-        #raise NotImplementedError
-
+        if len(codloca) > 1 and unique:
+            i = mostequivalent(loca, city)
+            return codpos[i]
+        else:
+            return unicode(codpos[0])
+    else:
+        raise NotImplementedError
 
 def unify_geo_data(input_string):
     """
@@ -146,7 +194,6 @@ def unify_geo_data(input_string):
                  'longitud': -64.292496499999999}
     True
     """
-    #print >> sys.stderr, "Unifying:", input_string
     input_string = input_string.lower()
     # Remove sporius data for search and store it in street2
     street2 = []
@@ -162,45 +209,45 @@ def unify_geo_data(input_string):
     
     # Search data in geographics database
     try:
-        place, (lat, lng) = geocode(_st(input_string, " ", " "))
-    except ValueError:
-        places = list(geocode(input_string, exactly_one=False))
-        i = mostequivalent(map(lambda (a,b): a, places), input_string)
-        place, (lat, lng) = places[i]
-    data = {}
-    result = map(lambda s: s.strip(), place.split(','))
-    result = [u'']*(4-len(result)) + result
-    # Ordering data
-    if len(result) == 4:
-        address, data['city'], data['state'], data['country'] = result
+        _gc = geocode(_st(input_string, " ", " "))
+        if _gc is None: 
+            return { 'error': 'No geocoding service available' }
+        if not _gc:
+            return { 'error': 'No answer' }
+    except GeocoderTimedOut:
+        return { 'error': 'Connection timeout' }
+
+    if len(_gc) > 1:
+        i = mostequivalent(map(lambda (a,b): a, _gc), input_string)
+        _gc = places[i]
     else:
-        raise RuntimeError('Exists more than 4 tokens in the place.')
-    data['latitud'] = lat
-    data['longitud'] = lng
-    # Split address data
-    if data['country'] in ['Argentina',]:
-        s = re.search(r'^\s*(.*)\s+(\d+)\s*$', address)
-        if s != None:
-            street, number = s.groups()
-        else:
-            street = input_string.split(',')[0]
-            s = re.search(r'(.*)\s+(\d+)', street)
-            if s != None:
-                street, number = s.groups()
-            else:
-                number = ''
-            data['city'] = address
-    else:
-        number, street = re.search(r'(\d*)\s+(.*)', address).groups()
-    data['street'] = street.strip()
-    data['street2'] = street2.strip()
-    data['number'] = number.strip()
-    # Load zip data
-    #try:
-        #data['zip'] = search_zip(data['street'], data['number'], data['city'],
-                                 #data['state'], data['country'])
-    #except:
-    data['zip'] = ''
+        _gc = _gc[0]
+    place, lat, lng = [ _gc[k] for k in ['display_name', 'lat', 'lon'] ]
+    _logger.debug("PLACE: %s" % place)
+
+    for _re in address_re:
+        result = _re.search(place)
+        if result:
+            result = result.groupdict()
+            break
+        _logger.debug("IGNORE: %s" % _re)
+
+    assert result is not None, "Geolocalization return wrong address."
+
+    _logger.debug("RESULT: %s" % result)
+
+    data = {
+        'country': result['country'],
+        'zip': result['zip'],
+        'state': result['state'],
+        'city': result['city'],
+        'neighbourhood': result['neighbourhood'],
+        'number': result['number'],
+        'street': result['street'],
+        'street2': result['building'],
+        'latitud': float(lat),
+        'longitud': float(lng),
+    }
     return data
 
 def test_suite():

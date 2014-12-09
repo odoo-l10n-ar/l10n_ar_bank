@@ -11,10 +11,10 @@
     'license': 'AGPL-3',
     'name': 'Banks of Argentina',
     'test': ['test/l10n_ar_banks_wizard.yml'],
-    'update_xml': [   'data/res_bank.xml',
-                      'l10n_ar_bank.xml',
-                      'l10n_ar_bank_menu.xml',
-                      'wizard/wiz_l10n_ar_bank.xml'],
+    'data': ['data/res_bank.xml',
+             'l10n_ar_bank.xml',
+             'l10n_ar_bank_menu.xml',
+             'wizard/wiz_l10n_ar_bank.xml'],
     'version': '2.7.231',
     'website': 'https://launchpad.net/~openerp-l10n-ar-localization'}
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

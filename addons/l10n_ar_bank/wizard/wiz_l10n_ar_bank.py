@@ -25,49 +25,43 @@ class l10n_ar_banks_wizard(osv.osv_memory):
 
         country_obj = self.pool.get('res.country')
         state_obj = self.pool.get('res.country.state')
-	banks_obj = self.pool.get('res.bank')
+	bank_obj = self.pool.get('res.bank')
 
         state_translate = {
                 'Autonomous City of Buenos Aires': 'Ciudad Autónoma de Buenos Aires',
                 'Ushuaia': 'Tierra del Fuego'
         }
 
-	idargentina = country_obj.search(cr, uid, [('name', '=', 'Argentina')])[0]
+	argentina_id = country_obj.search(cr, uid, [('name', '=', 'Argentina')])[0]
 
-	TodosLosBancosArgentinos = banks_obj.search(cr, uid, [('country', '=', idargentina)])  
-	self.pool.get('res.bank').write(cr, uid, TodosLosBancosArgentinos, {'active': False}, context=context)
-	bancos_desahabilitados = len(TodosLosBancosArgentinos)
-	
-	for bank in ar_banks_iterator():	    	    
-	    bancos_procesados += 1
-            vals=dict(bank)
-	    vals.update({
-                    'country': idargentina,
-                    'state': state_obj.search(cr, uid, [('name', '=',
-                                                         state_translate[bank['state']]
-                                                         if bank['state'] in state_translate 
-                                                         else bank['state'])])[0],
-                    'update' : time.strftime('%Y-%m-%d'),
-            })
-	    Bancos_ids = banks_obj.search(cr, uid, [('name', '=', bank.get('name')),('country', '=', idargentina),('active', '=', False)])
-	    if not(Bancos_ids):
-		Bancos_ids = banks_obj.search(cr, uid, [('vat', '=', bank.get('vat')), ('country', '=', idargentina),('active', '=', False)])
-		if not(Bancos_ids):
-		    Bancos_ids = banks_obj.search(cr, uid, [('street', '=', bank.get('street')), ('city', '=', bank.get('city')), ('country', '=', idargentina),('active', '=', False)])		
-		    
-	    if Bancos_ids:
-		bancos_desahabilitados -= 1
-		bancos_actualizados += 1
-		self.pool.get('res.bank').write(cr, uid, [Bancos_ids[0]], vals, context=context)
+	for bank in ar_banks_iterator():
+	    vals = {
+                'name': bank['name'],
+                'street': u'%s %s' % (bank.get('street',''), bank.get('number','')),
+                'street2': False,
+                'zip': bank.get('zip', False),
+                'city': bank.get('city', False),
+                'state': (state_obj.search(cr, uid, [
+                    ('name', '=', state_translate.get(bank['state'], bank['state'])),
+                    ('country_id', '=', argentina_id)
+                ]) + [False])[0],
+                'country': argentina_id,
+                'email': bank.get('email', False),
+                'phone': bank.get('phone', False),
+                'fax': bank.get('fax', False),
+                'active': True,
+                'bic': False,
+                'vat': bank.get('vat', False),
+            }
+	    bank_ids = bank_obj.search(cr, uid, [
+                ('country', '=', argentina_id),
+                ('vat', '=', bank['vat']),
+            ])
+	    if bank_ids:
+		self.pool.get('res.bank').write(cr, uid, [bank_ids[0]], vals, context=context)
 	    else:
-		bancos_nuevos += 1
 		self.pool.get('res.bank').create(cr, uid, vals, context=context)
 
-	Resultados.update({'bancos_procesados' : bancos_procesados})
-	Resultados.update({'bancos_actualizados' : bancos_actualizados})
-	Resultados.update({'bancos_nuevos' : bancos_nuevos})
-	Resultados.update({'bancos_desahabilitados' : bancos_desahabilitados})
-        
 	return {
 		'view_type': 'form',
 		'view_mode': 'form',
@@ -75,7 +69,7 @@ class l10n_ar_banks_wizard(osv.osv_memory):
 		'res_model': 'l10nar.banks.wizard.result',
 		'type': 'ir.actions.act_window',
 		'target': 'new'
-	    }    
+	}
  
 l10n_ar_banks_wizard()
 

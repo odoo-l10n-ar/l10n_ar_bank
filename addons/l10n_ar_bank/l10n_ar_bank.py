@@ -6,10 +6,8 @@ import time
 class Bank(osv.osv):
     _inherit = 'res.bank'
     _columns = {
-		  'update' : fields.date(_('Update')),
-		  'vat': fields.char(_('VAT'),size=32 ,help="Value Added Tax number."),
-		}
-    _defaults = {
-		  'update': lambda *a: time.strftime('%Y-%m-%d')
-		}
+        'vat': fields.char(_('VAT'),size=32 ,help="Value Added Tax number."),
+    }
+
 Bank()
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
