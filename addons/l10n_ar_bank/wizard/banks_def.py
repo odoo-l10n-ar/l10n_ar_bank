@@ -141,7 +141,7 @@ def ar_banks_iterator(
             searchaddress = u"%(street)s, %(city)s, %(state)s, %(country)s" % data
             geodata = unify_geo_data(strip_accents(searchaddress))
             if 'error' in geodata:
-                _logger.error("%s. %s." % (geodata['error'], searchaddress))
+                _logger.warning("%s. %s." % (geodata['error'], searchaddress))
                 continue
             else:
                 data.update(geodata)
