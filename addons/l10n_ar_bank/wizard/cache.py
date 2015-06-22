@@ -12,8 +12,11 @@ except ImportError:
     GeocoderTimedOut = None
     _logger.warning("Please, install geopy using 'pip install geopy'.")
 
-import sys, urllib, hashlib, os, os.path, pickle
-from types import GeneratorType
+import urllib
+import hashlib
+import os
+import os.path
+import pickle
 
 
 def urlopen(url):
@@ -26,6 +29,7 @@ def urlopen(url):
     if not os.path.exists(tmpfilename):
         filename, header = urllib.urlretrieve(url, tmpfilename)
     return open(tmpfilename)
+
 
 def geocode(input_string, **args):
     if gc is None:
@@ -51,3 +55,4 @@ def geocode(input_string, **args):
 
     return response
 
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
