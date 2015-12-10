@@ -251,7 +251,8 @@ def unify_geo_data(input_string):
             break
         _logger.debug("IGNORE: %s" % _re)
 
-    assert result is not None, "Geolocalization return wrong address."
+    if not result:
+        return False
 
     _logger.debug("RESULT: %s" % result)
 

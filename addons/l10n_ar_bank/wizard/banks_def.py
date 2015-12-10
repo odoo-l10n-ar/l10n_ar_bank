@@ -15,19 +15,19 @@ from cache import urlopen
 
 encoding = 'ISO-8859-1'
 compiled_re = {
-    'code': re.compile(r'N... Banco:</span>\s*(\d+)'),
-    'office': re.compile(r'Direcci..n:</span>&nbsp;\s*(.{40})'),
-    'street': re.compile(r'Direcci..n:</span>&nbsp;\s*.{40}([^-]*)-'),
-    'city': re.compile(r'Direcci..n:</span>&nbsp;\s*.{40}[^-]*-([^-]*)-'),
-    'state': re.compile(r'Direcci..n:</span>&nbsp;\s*.{40}[^-]*-[^-]*-([^-]*)'),
-    'phone': re.compile(r'Tel..fono:</span>&nbsp;([\d-]+)\s*&nbsp;'),
-    'fax': re.compile(r'Fax:</span>&nbsp;([\d-]+)\s*&nbsp;'),
-    'email': re.compile(r'Email:</span>&nbsp;<a href="mailto:([^"\s]+)\s*"'),
-    'address': re.compile(r'Direcci..n:</span>&nbsp;\s*(.*)\s*\r'),
-    'site': re.compile(r'Sitio:&nbsp;</span><a href="([^"\s]+)\s*"'),
-    'gins': re.compile(r'Grupo Institucional:</span>&nbsp;\s*(.*)\s*'),
-    'ghom': re.compile(r'Grupo Homog..neo:</span>&nbsp;\s*(.*)\s*'),
-    'vat': re.compile(r'CUIT:</span>&nbsp;([\d-]+)\s*&nbsp;'),
+    'code': re.compile(r'N... Banco:\s*(\d+)'),
+    'office': re.compile(r'Direcci..n:&nbsp;\s*(.{40})'),
+    'street': re.compile(r'Direcci..n:&nbsp;\s*.{40}([^-]*)-'),
+    'city': re.compile(r'Direcci..n:&nbsp;\s*.{40}[^-]*-([^-]*)-'),
+    'state': re.compile(r'Direcci..n:&nbsp;\s*.{40}[^-]*-[^-]*-([^-]*)'),
+    'phone': re.compile(r'Tel..fono:&nbsp;([\d-]+)\s*&nbsp;'),
+    'fax': re.compile(r'Fax:&nbsp;([\d-]+)\s*&nbsp;'),
+    'email': re.compile(r'Email:&nbsp;<a href="mailto:([^"\s]+)\s*"'),
+    'address': re.compile(r'Direcci..n:&nbsp;\s*(.*)\s*\r'),
+    'site': re.compile(r'Sitio:&nbsp;<a href="([^"\s]+)\s*"'),
+    'gins': re.compile(r'Grupo Institucional:&nbsp;\s*(.*)\s*'),
+    'ghom': re.compile(r'Grupo Homog..neo:&nbsp;\s*(.*)\s*'),
+    'vat': re.compile(r'CUIT:&nbsp;([\d-]+)\s*&nbsp;'),
 }
 
 
@@ -87,8 +87,9 @@ bankfields = [
 
 
 def ar_banks_iterator(
-    url_bank_list='http://www.bcra.gov.ar/sisfin/sf010100.asp',
-    url_bank_info='http://www.bcra.gov.ar/sisfin/sf010100.asp?bco=%s',
+    url_bank_list='http://www.bcra.gov.ar/Sistema_financiero/sisfin020101.asp',
+    url_bank_info='http://www.bcra.gob.ar/Sistema_financiero/'
+    'sisfin020101.asp?bco=%s',
     country='Argentina'
 ):
     """
@@ -116,11 +117,13 @@ def ar_banks_iterator(
 
             data = {
                 'id': id,
+                'bcra_code': id,
                 'name': name,
                 'country': country,
                 'active': '1',
+                'number': '',
             }
-            for line in soup_bank('div')[5]('table')[0]('tr'):
+            for line in soup_bank(id='texto_columna_2')[0]('table')[1]('tr'):
                 sline = line.td.renderContents()
                 for key in compiled_re.keys():
                     search = compiled_re[key].search(sline)
@@ -129,16 +132,15 @@ def ar_banks_iterator(
             searchaddress = u"%(street)s, %(city)s, %(state)s, %(country)s" \
                 % data
             geodata = unify_geo_data(strip_accents(searchaddress))
-            if 'error' in geodata:
-                _logger.warning("%s. %s." % (geodata['error'], searchaddress))
-                continue
-            else:
+            if geodata:
                 data.update(geodata)
                 for key in postprocessor_keys.keys():
                     if key in data:
                         data[key] = postprocessor_keys[key](key, data)
                         data[key] = data[key]
-                yield data
+            else:
+                _logger.warning("No geoposition %s." % (searchaddress))
+            yield data
 
     return
 

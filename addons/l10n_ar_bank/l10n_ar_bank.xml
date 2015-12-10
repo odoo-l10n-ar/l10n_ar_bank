@@ -9,6 +9,7 @@
             <field name="type">form</field>
             <field name="arch" type="xml">
 	      <field name="bic" position="after">
+		  <field name='bcra_code'/>
 		  <field name='vat'/>
 	      </field>
             </field>
